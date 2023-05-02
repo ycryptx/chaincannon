@@ -1,0 +1,8 @@
+version: "3.8"
+
+services:
+  example-cosmos:
+    image: example-cosmos
+    container_name: example-cosmos
+    build:
+      context: ./example/cosmos/chain
