@@ -1,14 +1,20 @@
 accounts:
+  - name: validator
+    coins: ["20000token", "200000000stake"]
   - name: alice
     coins: ["20000token", "200000000stake"]
+    mnemonic: vibrant this double cargo bicycle regret shoe benefit bind silly proof scare destroy harsh green lady pear cup copy cruel blanket winner invite wine
   - name: bob
     coins: ["10000token", "100000000stake"]
+    mnemonic: can erase spirit sentence project prison inject marble kid write rebuild auction sorry force slim win antique spend hand garbage tree wheel term stock
   - name: chris
     coins: ["20000token", "200000000stake"]
+    mnemonic: attitude cradle gorilla pony dry olympic chicken sail say hotel gate guess predict tomorrow project quarter improve rhythm lazy soul setup lab glory glove
   - name: daria
     coins: ["10000token", "100000000stake"]
+    mnemonic: review melody leader fatal tone hood coffee taste shy shoulder garlic alone veteran cave soup goose vanish knee bullet shoot teach august fade suspect
 validator:
-  name: alice
+  name: validator
   staked: "100000000stake"
 client:
   openapi:
