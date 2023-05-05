@@ -3,40 +3,37 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
+	"runtime"
 	"strings"
 
+	"github.com/ycryptx/chaincannon/pkg/benchmark"
 	"github.com/ycryptx/chaincannon/pkg/cosmos"
-)
-
-type Color string
-
-const (
-	ColorBlack  Color = "\u001b[30m"
-	ColorRed          = "\u001b[31m"
-	ColorGreen        = "\u001b[32m"
-	ColorYellow       = "\u001b[33m"
-	ColorBlue         = "\u001b[34m"
-	ColorReset        = "\u001b[0m"
+	"github.com/ycryptx/chaincannon/pkg/flags"
 )
 
 var SUPPORTED_CHAINS = []string{"cosmos"}
 
-func colorize(color Color, message string) {
-	fmt.Println(string(color), message, string(ColorReset))
-}
+var txPaths flags.StringArray
 
 func main() {
 	chain := flag.String("chain", "", fmt.Sprintf("The blockchain type (e.g. %s).", strings.Join(SUPPORTED_CHAINS, ", ")))
 	endpoint := flag.String("endpoint", "", "The node's RPC endpoint to call.")
-	connections := flag.Int("connections", 1, "The number of concurrent connections to make.")
+	flag.Var(&txPaths, "tx-file", "Path to a file containing signed transactions. This flag can be used more than once.")
 	duration := flag.Int("duration", 10, "The number of seconds to run the benchmark.")
 	amount := flag.Int("amount", 0, "The number of requests to make before exiting the benchmark. If set, duration is ignored.")
-	threads := flag.Int("threads", 0, "The number of worker threads to use to make requests. (default: max)")
+	threads := flag.Int("threads", 0, "The number of concurrent threads to use to make requests. (default: max)")
 	flag.Parse()
+
+	recipe := benchmark.ProcessFlags(*endpoint, txPaths, *duration, *amount, *threads, runtime.NumCPU())
 
 	switch *chain {
 	case "cosmos":
-		cosmos.Handle(*endpoint, *connections, *duration, *amount, *threads)
+		err := cosmos.Handle(recipe)
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
 	default:
 		fmt.Printf("Chaincannon is a blockchain benchmarking tool. Currently supported chains are: %s\n", strings.Join(SUPPORTED_CHAINS, ", "))
 		fmt.Println("Usage: chaincannon [opts]")
