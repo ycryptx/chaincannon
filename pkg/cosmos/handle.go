@@ -146,6 +146,7 @@ func SendTx(ctx context.Context, txClient tx.ServiceClient, txData []byte) (stri
 
 func blockMonitor(ctx context.Context, cancel context.CancelFunc) error {
 	log, _ := ctx.Value("log").(*zap.Logger)
+	recipe, _ := ctx.Value("recipe").(*benchmark.Recipe)
 	monitoring, _ := ctx.Value("monitoring").(*benchmark.Monitoring)
 	rpcClient, err := client.NewClientFromNode(fmt.Sprintf("tcp://%s", "0.0.0.0:26657"))
 	if err != nil {
@@ -200,6 +201,9 @@ func blockMonitor(ctx context.Context, cancel context.CancelFunc) error {
 			}
 
 			if monitoring.Done && monitoring.NoMorePendingTxs() && len(hashes) == 0 {
+				cancel()
+			}
+			if recipe.Amount > 0 && monitoring.TxFired > recipe.Amount && monitoring.NoMorePendingTxs() && len(hashes) == 0 {
 				cancel()
 			}
 		}

@@ -60,7 +60,7 @@ func (monitoring *Monitoring) addTx(ctx context.Context, tx *TxPending, cancel c
 	recipe, _ := ctx.Value("recipe").(*Recipe)
 	if recipe.Amount > 0 && monitoring.TxFired >= recipe.Amount {
 		// don't track txs after they exceed the max tx amount
-		cancel()
+		return
 	}
 	monitoring.mu.Lock()
 	if _, ok := monitoring.txs[tx.Hash]; !ok {
