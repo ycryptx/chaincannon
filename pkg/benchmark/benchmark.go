@@ -5,15 +5,15 @@ import (
 )
 
 // Processes user CLI flags and determines the level of concurrency by which to run the benchmark.
-func ProcessFlags(endpoint string, txPaths []string, duration int, amount int, threads int, maxCores int) *Recipe {
+func ProcessFlags(endpoint string, txPaths []string, duration int, amount int, threads int, maxCores int, maxDuration time.Duration) *Recipe {
 	// cap threads to max available cores, or if threads is unset default to max available cores
 	if maxCores < threads || threads == 0 {
 		threads = maxCores
 	}
 
 	asDuration := time.Duration(duration) * time.Second
-	if amount > 0 {
-		asDuration = time.Duration(0)
+	if amount > 0 || asDuration > maxDuration {
+		asDuration = maxDuration
 	}
 
 	runs := []Run{}
@@ -32,5 +32,3 @@ func ProcessFlags(endpoint string, txPaths []string, duration int, amount int, t
 		Runs:     runs,
 	}
 }
-
-// func ProcessLatency()

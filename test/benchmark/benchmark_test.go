@@ -9,8 +9,9 @@ import (
 )
 
 var (
-	endpoint = "0.0.0.0:123"
-	maxCores = 4
+	endpoint    = "0.0.0.0:123"
+	maxCores    = 4
+	maxDuration = time.Duration(10000) * time.Second
 )
 
 type addTest struct {
@@ -24,9 +25,9 @@ type addTest struct {
 }
 
 var addTests = []addTest{
-	{"when amount is set duration should == 0", endpoint, []string{"/path1"}, 123, 456, 0, benchmark.Recipe{
+	{"when amount is set duration should == maxDuration", endpoint, []string{"/path1"}, 123, 456, 0, benchmark.Recipe{
 		Endpoint: endpoint,
-		Duration: time.Duration(0),
+		Duration: maxDuration,
 		Amount:   456,
 		Runs:     []benchmark.Run{{TxPaths: []string{"/path1"}}},
 	}},
@@ -64,7 +65,7 @@ var addTests = []addTest{
 
 func TestProcessFlags(t *testing.T) {
 	for _, test := range addTests {
-		if diff := deep.Equal(test.expected, *benchmark.ProcessFlags(test.endpoint, test.txPaths, test.duration, test.amount, test.threads, maxCores)); diff != nil {
+		if diff := deep.Equal(test.expected, *benchmark.ProcessFlags(test.endpoint, test.txPaths, test.duration, test.amount, test.threads, maxCores, maxDuration)); diff != nil {
 			t.Errorf("%s: %q", test.testName, diff)
 		}
 	}
