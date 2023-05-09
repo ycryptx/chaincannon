@@ -1,6 +1,6 @@
 # Chaincannon
 
-Chaincannon is an all-in-one blockchain benchmarking tool written in go, currently only available for [`Cosmos-SDK`](https://github.com/cosmos/cosmos-sdk) based chains.
+Chaincannon is an all-in-one blockchain benchmarking tool written in go, currently only available for [Cosmos-SDK](https://github.com/cosmos/cosmos-sdk) based chains.
 
 The goal of Chaincannon is to be a memory-efficient, lightweight tool for stress testing and benchmarking a blockchain. A single benchmark can fire tens of thousands of concurrent transactions in a controlled, repeatable way. That makes it possible to integrate chaincannon as part of a the blockchain development`s ci/cd pipeline.
 
@@ -75,11 +75,11 @@ Currently unimplemented:
 
 ## About Transaction Files
 
-Transaction files should contain protobuf-encoded signed transactions. Each transaction in a file should be new-line-delimited. Each transaction file can be run concurrently or synchronously depending on the `--threads` user flags and on how many cores are available on the machine running the benchmark. An example of how transactions can be generated can [`be found here`](./example/cosmos/data/tx_gen.sh). Note that the demo transactions are specific to [`the demo blockchain`](./example/cosmos/chain/Dockerfile). The demo transactions use [`Cosmos' x/bank module`](https://docs.cosmos.network/v0.46/modules/bank/) to pass tokens between pre-funded users. You will probably want to generate transactions specific to the modules in your blockchain.
+Transaction files should contain protobuf-encoded signed transactions. Each transaction in a file should be new-line-delimited. Each transaction file can be run concurrently or synchronously depending on the `--threads` user flags and on how many cores are available on the machine running the benchmark. An example of how transactions can be generated can [be found here](./example/cosmos/data/tx_gen.sh). Note that the demo transactions are specific to [the demo blockchain](./example/cosmos/chain/Dockerfile). The demo transactions use [Cosmos' x/bank module](https://docs.cosmos.network/v0.46/modules/bank/) to pass tokens between pre-funded users. You will probably want to generate transactions specific to the modules in your blockchain.
 
 ## Demo
 
-Use this demo to see how chaincannon works. It spins up a local cosmos-sdk chain using Docker (you must have Docker [`installed`](https://docs.docker.com/get-docker/)), and hits the chain with a series of concurrent transactions from a few transacions files. You may look at the [`Makefile`](./Makefile) to see how the chaincannon cli command is structured.
+Use this demo to see how chaincannon works. It spins up a local cosmos-sdk chain using Docker (you must have Docker [installed](https://docs.docker.com/get-docker/)), and hits the chain with a series of concurrent transactions from a few transacions files. You may look at the [`Makefile`](./Makefile) to see how the chaincannon cli command is structured.
 
 ```bash
 $ make setup-example
