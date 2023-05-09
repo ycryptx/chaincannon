@@ -1,6 +1,6 @@
 # Chaincannon
 
-Chaincannon is an all-in-one blockchain benchmarking tool written in go, currently only available for [Cosmos-SDK](https://github.com/cosmos/cosmos-sdk) based chains. As the name suggests, this tool is inspired by Matteo Collina's [Autocannon](https://github.com/mcollina/autocannon)
+Chaincannon is an all-in-one blockchain benchmarking tool written in go, currently only available for [Cosmos-SDK](https://github.com/cosmos/cosmos-sdk) based chains. As the name suggests, this tool is inspired by Matteo Collina's [Autocannon](https://github.com/mcollina/autocannon).
 
 The goal of Chaincannon is to be a memory-efficient, lightweight tool for stress testing and benchmarking a blockchain. A single benchmark can fire tens of thousands of concurrent transactions in a controlled, repeatable way. That makes it possible to integrate chaincannon as part of a the blockchain development`s ci/cd pipeline.
 
