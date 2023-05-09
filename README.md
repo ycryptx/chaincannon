@@ -89,6 +89,9 @@ And in another terminal window run:
 $ make run-example
 ```
 
+<img src="./example/cosmos/chaincannon_demo.gif" width="1000" height="600" />
+
+
 ## Licensing
 
 [`Apache License 2.0`](./LICENSE)
