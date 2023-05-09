@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"math/rand"
 	"os"
 	"strings"
 	"time"
@@ -62,15 +63,18 @@ func Handle(ctx context.Context) {
 		}
 	}
 
+	startBenchmark := time.Now()
 	for i, run := range transactionFileReadersPerRun {
 		isLast := i == len(transactionFileReadersPerRun)-1
 		go Run(ctx, run, cancel, isLast)
 	}
 
 	<-ctx.Done()
+	endBenchmark := time.Now()
 	grpcConn.Close()
 	bar.Finish()
 	cancel()
+	monitor.Report.RecordBenchmarkDuration(ctx, startBenchmark, endBenchmark)
 	monitor.Report.PrintReport(ctx)
 }
 
@@ -83,6 +87,7 @@ func Run(ctx context.Context, txFiles []*bufio.Scanner, cancel context.CancelFun
 		return
 	}
 	monitoring, _ := ctx.Value("monitoring").(*benchmark.Monitoring)
+	random := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	txClient := tx.NewServiceClient(grpcConn)
 	for _, fileReader := range txFiles {
@@ -96,6 +101,10 @@ func Run(ctx context.Context, txFiles []*bufio.Scanner, cancel context.CancelFun
 			if err != nil {
 				log.Error(err.Error())
 			}
+			// add random buffer between txs to simulate regular behavior (never more than 10ms)
+			toSleep := time.Millisecond * time.Duration(random.Int31n(10))
+			time.Sleep(toSleep)
+
 			start := time.Now()
 			hash, err := SendTx(ctx, txClient, decoded)
 			if err != nil {
@@ -164,48 +173,68 @@ func blockMonitor(ctx context.Context, cancel context.CancelFunc) error {
 		return err
 	}
 
-	var lastBlockTime time.Time
-
 	// Listen for new blocks
 	go func() {
+		blockTimes := map[int64]time.Time{}
+
 		for {
 			event := <-eventCh
 			blockEvent, ok := event.Data.(types.EventDataNewBlock)
 			if !ok {
-				log.Warn("Cosmos block subscriber: nexpected event data")
+				log.Warn("Cosmos block subscriber: unexpected event data")
 				continue
 			}
 			endTime := time.Now()
-			block := blockEvent.Block
-			hashes := []string{}
 
-			blockTime := block.Time
-			if !lastBlockTime.IsZero() {
-				monitoring.Report.RecordBlockTime(ctx, lastBlockTime, blockTime)
-			}
-			lastBlockTime = blockTime
+			go func() {
+				block := blockEvent.Block
+				hashes := []string{}
 
-			resBlock, err := rpcClient.TxSearch(ctx, fmt.Sprintf("tx.height=%d", block.Height), false, nil, nil, "asc")
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+				blockTime := block.Time
 
-			for _, tx := range resBlock.Txs {
-				hash := tx.Hash.String()
-				if monitoring.IsOurTx(ctx, hash) {
-					hashes = append(hashes, hash)
+				if _, ok := blockTimes[block.Height]; ok {
+					log.Warn("received duplicate block from node")
+					return
 				}
-			}
-			if len(hashes) > 0 {
-				monitoring.RecordTxs(ctx, hashes, endTime)
-			}
 
-			if monitoring.Done && monitoring.NoMorePendingTxs() && len(hashes) == 0 {
-				cancel()
-			}
-			if recipe.Amount > 0 && monitoring.TxFired > recipe.Amount && monitoring.NoMorePendingTxs() && len(hashes) == 0 {
-				cancel()
-			}
+				if _, ok := blockTimes[block.Height-1]; !ok {
+					// make sure we always have the previous blockTime
+					prevHeight := new(int64)
+					*prevHeight = block.Height - 1
+					resBlock, _ := rpcClient.Block(ctx, prevHeight)
+					blockTimes[block.Height-1] = resBlock.Block.Time
+				}
+
+				blockTimes[block.Height] = blockTime
+				lastBlockTime := blockTimes[block.Height-1]
+				monitoring.Report.RecordBlockTime(ctx, lastBlockTime, blockTime)
+
+				resBlock, err := rpcClient.TxSearch(ctx, fmt.Sprintf("tx.height=%d", block.Height), false, nil, nil, "asc")
+				if err != nil {
+					log.Fatal(err.Error())
+				}
+
+				for _, tx := range resBlock.Txs {
+					hash := tx.Hash.String()
+					if monitoring.IsOurTx(ctx, hash) {
+						hashes = append(hashes, hash)
+					}
+				}
+
+				if len(hashes) > 0 {
+					monitoring.Report.RecordTPS(ctx, lastBlockTime, blockTime, len(hashes))
+					monitoring.RecordTxs(ctx, hashes, endTime)
+				} else {
+					if monitoring.Done && monitoring.NoMorePendingTxs() {
+						cancel()
+						return
+					}
+					if recipe.Amount > 0 && monitoring.TxFired > recipe.Amount && monitoring.NoMorePendingTxs() {
+						cancel()
+						return
+					}
+				}
+			}()
 		}
 	}()
 	return nil

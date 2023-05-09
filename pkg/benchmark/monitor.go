@@ -13,6 +13,7 @@ func InitMonitoring(ctx context.Context, cancel context.CancelFunc) *Monitoring 
 	report := &Report{
 		Latencies:  hdrhistogram.New(1, highestDiscernibleValue.Milliseconds(), 5),
 		BlockTimes: hdrhistogram.New(1, highestDiscernibleValue.Milliseconds(), 5),
+		TPS:        hdrhistogram.New(1, highestDiscernibleValue.Milliseconds(), 5),
 	}
 	m := &Monitoring{Report: report, Stream: make(chan *TxPending), txs: map[string]*TxPending{}}
 	go m.monitor(ctx, cancel)

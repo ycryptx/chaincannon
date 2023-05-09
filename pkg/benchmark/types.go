@@ -35,6 +35,8 @@ type TxPending struct {
 }
 
 type Report struct {
-	Latencies  *hdrhistogram.Histogram
-	BlockTimes *hdrhistogram.Histogram
+	Latencies         *hdrhistogram.Histogram
+	BlockTimes        *hdrhistogram.Histogram
+	TPS               *hdrhistogram.Histogram
+	BenchmarkDuration time.Duration
 }

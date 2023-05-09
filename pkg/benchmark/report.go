@@ -18,9 +18,20 @@ func (report *Report) RecordBlockTime(ctx context.Context, start time.Time, end 
 	report.BlockTimes.RecordValue(end.UnixMilli() - start.UnixMilli())
 }
 
+func (report *Report) RecordBenchmarkDuration(ctx context.Context, start time.Time, end time.Time) {
+	report.BenchmarkDuration = end.Sub(start)
+}
+
+func (report *Report) RecordTPS(ctx context.Context, blockTimeStart time.Time, blockTimeEnd time.Time, txsInBlock int) {
+	tps := float64(txsInBlock) / (float64((blockTimeEnd.Sub(blockTimeStart)).Seconds()))
+	report.TPS.RecordValue(int64(tps))
+}
+
 func (report *Report) PrintReport(ctx context.Context) {
+	recipe, _ := ctx.Value("recipe").(*Recipe)
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetRowSeparator("-")
+	table.SetRowLine(true)
 	table.SetHeader([]string{
 		"Stat",
 		"2.5%",
@@ -47,9 +58,11 @@ func (report *Report) PrintReport(ctx context.Context) {
 	fmt.Println("")
 	report.printTxLatencies(table)
 	report.printBlockTimes(table)
+	report.printTPS(table)
 	table.Render()
 	fmt.Println("")
-	fmt.Println("")
+	fmt.Printf("Benchmark ran %d concurrent processes\n", len(recipe.Runs))
+	fmt.Printf("Executed %d txs and took %f seconds", report.Latencies.TotalCount(), report.BenchmarkDuration.Seconds())
 }
 
 func (report *Report) printTxLatencies(table *tablewriter.Table) {
@@ -77,5 +90,18 @@ func (report *Report) printBlockTimes(table *tablewriter.Table) {
 		fmt.Sprintf("%.2f ms", report.BlockTimes.StdDev()),
 		fmt.Sprintf("%v ms", report.BlockTimes.Max()),
 		fmt.Sprintf("%v", report.BlockTimes.TotalCount()),
+	})
+}
+
+func (report *Report) printTPS(table *tablewriter.Table) {
+	table.Append([]string{
+		chalk.Bold.TextStyle("TPS"),
+		fmt.Sprintf("%v", report.TPS.ValueAtPercentile(2.5)),
+		fmt.Sprintf("%v", report.TPS.ValueAtPercentile(50)),
+		fmt.Sprintf("%v", report.TPS.ValueAtPercentile(97.5)),
+		fmt.Sprintf("%v", report.TPS.ValueAtPercentile(99)),
+		fmt.Sprintf("%.2f", report.TPS.Mean()),
+		fmt.Sprintf("%.2f", report.TPS.StdDev()),
+		fmt.Sprintf("%v", report.TPS.Max()),
 	})
 }
