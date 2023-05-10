@@ -1,9 +1,18 @@
 .PHONY: # ignore
 
-current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
+DATE := $(shell date '+%Y-%m-%dT%H:%M:%S')
+HEAD = $(shell git rev-parse HEAD)
+LD_FLAGS = -X github.com/ycryptx/chaincannon/version.Head='$(HEAD)' \
+	-X github.com/ycryptx/chaincannon/version.Date='$(DATE)'
+BUILD_FLAGS = -mod=readonly -ldflags='$(LD_FLAGS)'
 
 help:
 	@perl -nle'print $& if m{^[a-zA-Z_-]+:.*?## .*$$}' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+install: # install the binary
+	@echo Installing Chaincannon...
+	@go install $(BUILD_FLAGS) ./...
+	@echo Chaincannon installed!
 
 run: # run the package
 	go run ./cmd/chaincannon/main.go

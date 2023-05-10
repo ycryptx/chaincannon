@@ -9,7 +9,7 @@ Because the generation, encoding, and signing of transactions is different betwe
 ## Installation
 
 ```bash
-$ make build
+$ make install
 
 ```
 
