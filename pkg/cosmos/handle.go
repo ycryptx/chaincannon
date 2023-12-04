@@ -30,7 +30,7 @@ func Handle(ctx context.Context) {
 	monitor := benchmark.InitMonitoring(ctx, cancel)
 	ctx = context.WithValue(ctx, "monitoring", monitor)
 
-	err := blockMonitor(ctx, cancel)
+	err := blockMonitor(ctx, cancel, recipe.TendermintEndpoint)
 	if err != nil {
 		log.Error(err.Error())
 		cancel()
@@ -153,11 +153,14 @@ func SendTx(ctx context.Context, txClient tx.ServiceClient, txData []byte) (stri
 	return grpcRes.TxResponse.TxHash, nil
 }
 
-func blockMonitor(ctx context.Context, cancel context.CancelFunc) error {
+func blockMonitor(ctx context.Context, cancel context.CancelFunc, tendermintEndpoint string) error {
 	log, _ := ctx.Value("log").(*zap.Logger)
 	recipe, _ := ctx.Value("recipe").(*benchmark.Recipe)
 	monitoring, _ := ctx.Value("monitoring").(*benchmark.Monitoring)
-	rpcClient, err := client.NewClientFromNode(fmt.Sprintf("tcp://%s", "0.0.0.0:26657"))
+	if tendermintEndpoint == "" {
+		return fmt.Errorf("%s: %s", ierror.ERROR_CONNECTION, "Missing -tendermintEndpoint flag")
+	}
+	rpcClient, err := client.NewClientFromNode(fmt.Sprintf("tcp://%s", tendermintEndpoint))
 	if err != nil {
 		return fmt.Errorf("%s: %s", ierror.ERROR_CONNECTION, err.Error())
 	}

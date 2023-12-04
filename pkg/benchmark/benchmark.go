@@ -5,7 +5,7 @@ import (
 )
 
 // Processes user CLI flags and determines the level of concurrency by which to run the benchmark.
-func ProcessFlags(endpoint string, txPaths []string, duration int, amount int, threads int, maxCores int, defaultDuration time.Duration) *Recipe {
+func ProcessFlags(endpoint string, tendermintEndpoint string, txPaths []string, duration int, amount int, threads int, maxCores int, defaultDuration time.Duration) *Recipe {
 	// cap threads to max available cores, or if threads is unset default to max available cores
 	if maxCores < threads || threads == 0 {
 		threads = maxCores
@@ -26,9 +26,10 @@ func ProcessFlags(endpoint string, txPaths []string, duration int, amount int, t
 	}
 
 	return &Recipe{
-		Endpoint: endpoint,
-		Duration: asDuration,
-		Amount:   amount,
-		Runs:     runs,
+		Endpoint:           endpoint,
+		Duration:           asDuration,
+		Amount:             amount,
+		TendermintEndpoint: tendermintEndpoint,
+		Runs:               runs,
 	}
 }

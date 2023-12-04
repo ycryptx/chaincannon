@@ -32,7 +32,7 @@ setup-example: # set an example cosmos chain
 
 run-example: # runs the example cosmos benchmark
 	go build ./cmd/chaincannon
-	./chaincannon -chain cosmos -endpoint 0.0.0.0:9090 -duration 60 -tx-file ./example/cosmos/data/run1.json  -tx-file ./example/cosmos/data/run3.json -tx-file ./example/cosmos/data/run4.json
+	./chaincannon -chain cosmos -endpoint 0.0.0.0:9090 -tendermintEndpoint 0.0.0.0:26657 -duration 60 -tx-file ./example/cosmos/data/run1.json  -tx-file ./example/cosmos/data/run3.json -tx-file ./example/cosmos/data/run4.json
 
 run-tests: # run all tests
 	gotestsum --format testname -- ./...

@@ -9,10 +9,11 @@ import (
 
 // a recipe is an internal representation of a user-initiated benchmark
 type Recipe struct {
-	Duration time.Duration // the duration of the benchmark
-	Amount   int           // the number of transactions to post. If set duration must be ignored
-	Endpoint string        // the URL address of the blockchain node to benchmark
-	Runs     []Run         // multiple runs are run concurrently
+	Duration           time.Duration // the duration of the benchmark
+	Amount             int           // the number of transactions to post. If set duration must be ignored
+	Endpoint           string        // the URL address of the blockchain node to benchmark
+	TendermintEndpoint string        // (only for Cosmos chains) the node's Tendermint RPC endpoint to use
+	Runs               []Run         // multiple runs are run concurrently
 }
 
 // a single synchronous execution of signed transaction file/s
