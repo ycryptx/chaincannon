@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"os"
 	"runtime"
 	"strings"
 	"time"
@@ -23,6 +24,7 @@ var SUPPORTED_CHAINS = []string{"cosmos"}
 var txPaths flags.StringArray
 
 func main() {
+	os.Unsetenv("HTTP_PROXY")
 	log := logger.InitLogger()
 	chain := flag.String("chain", "", fmt.Sprintf("The blockchain type (e.g. %s).", strings.Join(SUPPORTED_CHAINS, ", ")))
 	endpoint := flag.String("endpoint", "", "The node's RPC endpoint to call.")
